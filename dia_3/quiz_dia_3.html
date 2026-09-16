@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 03 | Fundamentos de LLMs, Tokenização &amp; SDK Python</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 03",
+  titulo: "Fundamentos de LLMs, Tokenização & SDK Python",
+  chave: "quiz_dia_03",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "O que a chamada `load_dotenv()` faz no início dos scripts do dia?",
+      opcoes: [
+        "Lê o arquivo `.env` e carrega as variáveis dele para o ambiente do processo",
+        "Cria automaticamente o arquivo `.env` com uma chave de API nova",
+        "Envia a chave de API para os servidores do Google para validação",
+        "Ativa o ambiente virtual `.venv` do projeto"
+      ],
+      correta: 0,
+      explicacao: "`load_dotenv()` só lê o `.env` e injeta o conteúdo nas variáveis de ambiente. Depois disso, `os.getenv(\"GEMINI_API_KEY\")` consegue enxergar a chave."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome da biblioteca que carrega variáveis de ambiente a partir do arquivo `.env`: `python-______`",
+      respostas: ["dotenv"],
+      explicacao: "É a `python-dotenv`, instalada junto com o SDK: `pip install google-genai python-dotenv`."
+    },
+    {
+      tipo: "vf",
+      enunciado: "O arquivo `.env` deve ser commitado no repositório para que todos do trio usem a mesma chave de API.",
+      resposta: false,
+      explicacao: "Falso, e essa é a Regra de Ouro do dia. O `.env` guarda credenciais e nunca vai para o Git — cada pessoa gera a própria chave no Google AI Studio."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome do arquivo que impede o `.env` de ser enviado ao Git: `.________`",
+      respostas: ["gitignore"],
+      explicacao: "O `.gitignore` precisa conter a linha `.env`. Vale conferir isso antes de qualquer `git push`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual é a biblioteca oficial do Google usada para chamar o Gemini em Python?",
+      opcoes: ["transformers", "google-genai", "openai", "gemini-python"],
+      correta: 1,
+      explicacao: "Instalamos com `pip install google-genai` e importamos com `from google import genai`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Se a variável `GEMINI_API_KEY` não existir no `.env`, o que acontece na linha `api_key = os.getenv(\"GEMINI_API_KEY\")`?",
+      opcoes: [
+        "O Python lança um `KeyError` imediatamente",
+        "A variável recebe uma string vazia e o script segue normalmente",
+        "A variável recebe `None`, e por isso o script faz a checagem e levanta um `ValueError`",
+        "O SDK busca a chave automaticamente na conta do Google logada na máquina"
+      ],
+      correta: 2,
+      explicacao: "`os.getenv` devolve `None` quando a variável não existe. Por isso o `01_hello_gemini.py` testa `if not api_key:` e levanta um erro explicativo em vez de quebrar lá na frente."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem correta os passos do script `01_hello_gemini.py`:",
+      itens: [
+        "`load_dotenv()` — carregar as variáveis do arquivo `.env`",
+        "`os.getenv(\"GEMINI_API_KEY\")` — ler a chave para uma variável",
+        "`genai.Client(api_key=api_key)` — inicializar o cliente",
+        "`client.models.generate_content(...)` — chamar o modelo",
+        "`print(response.text)` — exibir a resposta gerada"
+      ],
+      explicacao: "Carregar o `.env`, ler a chave, criar o cliente, chamar o modelo e só então consumir a resposta. Inverter qualquer um desses passos gera erro de autenticação ou de variável indefinida."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Um token é sempre equivalente a uma palavra inteira.",
+      resposta: false,
+      explicacao: "Falso. Um token pode ser uma palavra, um pedaço de palavra, um sinal de pontuação ou até um espaço — por isso a razão token/palavra quase nunca é exatamente 1."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "A sigla BPE, usada na tokenização das LLMs, significa:",
+      opcoes: ["Binary Prompt Encoding", "Byte-Pair Encoding", "Basic Parameter Estimation", "Batch Position Embedding"],
+      correta: 1,
+      explicacao: "Byte-Pair Encoding: o algoritmo junta os pares de bytes/caracteres mais frequentes do corpus até formar o vocabulário de tokens do modelo."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual método permite contar os tokens de um texto SEM gerar uma resposta (e sem gastar tokens de saída)?",
+      opcoes: [
+        "`client.models.generate_content(...)`",
+        "`client.models.embed_content(...)`",
+        "`client.models.count_tokens(...)`",
+        "`len(texto.split())`"
+      ],
+      correta: 2,
+      explicacao: "`count_tokens` é exatamente o que o `02_token_counter.py` usa, lendo o resultado em `res.total_tokens`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Depois de uma chamada ao modelo, onde está a quantidade de tokens que o SEU prompt consumiu?",
+      opcoes: [
+        "`response.usage_metadata.prompt_token_count`",
+        "`response.usage_metadata.candidates_token_count`",
+        "`response.usage_metadata.total_token_count`",
+        "`response.text.token_count`"
+      ],
+      correta: 0,
+      explicacao: "`prompt_token_count` é a entrada, `candidates_token_count` é a resposta gerada e `total_token_count` é a soma dos dois."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Um mesmo texto escrito em português tende a consumir mais tokens do que sua versão em inglês.",
+      resposta: true,
+      explicacao: "Verdadeiro. Os tokenizadores são treinados predominantemente em inglês, então acentos e palavras mais longas do português acabam quebrados em mais subpalavras — o que significa mais custo e mais espaço de contexto."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome do parâmetro que controla o grau de aleatoriedade na escolha do próximo token: ____________",
+      respostas: ["temperature", "temperatura"],
+      explicacao: "É a `temperature`. Valores baixos deixam a saída determinística; valores altos aumentam a variedade e o risco de incoerência."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Você vai usar a LLM para extrair dados estruturados de documentos, com máxima precisão e sem variação. Qual faixa de temperatura é a mais adequada?",
+      opcoes: ["0.0 a 0.2", "0.5 a 0.7", "0.8 a 1.2", "1.5 a 2.0"],
+      correta: 0,
+      explicacao: "Temperatura baixa para extração, código, cálculos e fatos precisos. As faixas altas ficam reservadas para escrita criativa e brainstorm."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Com `temperature = 0.0`, rodar o mesmo prompt várias vezes tende a produzir sempre a mesma resposta.",
+      resposta: true,
+      explicacao: "Verdadeiro — é o comportamento praticamente determinístico que vocês observam no `03_temperature_lab.py` ao executar a mesma chamada duas vezes seguidas."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que o parâmetro Top-P (nucleus sampling) faz?",
+      opcoes: [
+        "Limita a resposta a no máximo P palavras",
+        "Soma as probabilidades dos tokens mais prováveis até atingir P e sorteia apenas dentro desse núcleo",
+        "Define quantas vezes o modelo repete a geração antes de escolher a melhor",
+        "Fixa a quantidade exata de tokens candidatos, independentemente da probabilidade"
+      ],
+      correta: 1,
+      explicacao: "Top-P corta por probabilidade acumulada (núcleo variável). Quem corta por número fixo de candidatos é o Top-K."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Mesmo com `temperature = 1.0`, definir `top_k = 1` faz o modelo escolher sempre o token mais provável.",
+      resposta: true,
+      explicacao: "Verdadeiro. Com apenas um candidato elegível, não sobra o que sortear — por isso, no Experimento B do Dia 02, as respostas ficaram idênticas mesmo com temperatura alta."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o parâmetro que define o teto de tamanho da resposta gerada: `max_output_______`",
+      respostas: ["tokens"],
+      explicacao: "`max_output_tokens` limita quantos tokens o modelo pode gerar. Ele corta a resposta no limite — não faz o modelo \"resumir\" sozinho."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada parâmetro ao seu efeito na geração:",
+      pares: [
+        ["`temperature`", "Grau de aleatoriedade na escolha do próximo token"],
+        ["`top_k`", "Corte por número fixo de tokens candidatos"],
+        ["`top_p`", "Corte por probabilidade acumulada dos candidatos"],
+        ["`max_output_tokens`", "Teto de tamanho da resposta gerada"]
+      ],
+      explicacao: "Temperature mexe no quanto o sorteio é ousado; Top-K e Top-P definem quem entra no sorteio (por quantidade ou por probabilidade); max_output_tokens só limita o tamanho final."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

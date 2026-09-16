@@ -1,0 +1,13 @@
+Amostra	    Caracteres Estimados	Palavras Estimadas	Palpite de Tokens da Dupla
+Inglês	                  ~92	                   12	                    18
+Português	             ~113	                   15                    	21
+Código Python	         ~130	                   18	                    30
+
+Amostra 1 (Inglês): "Artificial Intelligence is transforming how we build software systems and interact with data." 13 espaços e . 21 tokens nas palavras - 34 
+Amostra 2 (Português): "A Inteligência Artificial está transformando a forma como construímos sistemas de software e interagimos com dados." 16 espaços e . 23 nas palavra - 39
+Amostra 3 (Código Python): 
+def calcular_media(valores: list[float]) -> float:
+    if not valores:
+        return 0.0
+    return sum(valores) / len(valores)
+    - espacos e pontos - 24 e 18 palavras - 42
