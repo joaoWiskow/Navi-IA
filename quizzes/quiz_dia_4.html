@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 04 | Engenharia de Prompt Avançada &amp; Segurança</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 04",
+  titulo: "Engenharia de Prompt Avançada & Segurança",
+  chave: "quiz_dia_04",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "O que caracteriza o **Few-Shot Prompting**?",
+      opcoes: [
+        "Fornecer exemplos resolvidos dentro do próprio prompt para ensinar o padrão de resposta",
+        "Treinar novamente o modelo com poucos dados",
+        "Fazer poucas chamadas à API para economizar cota",
+        "Limitar a resposta a poucas palavras"
+      ],
+      correta: 0,
+      explicacao: "Few-shot é puramente textual: você coloca alguns exemplos de entrada/saída no prompt e o modelo imita o formato. Nada de re-treino nem de flag na API."
+    },
+    {
+      tipo: "vf",
+      enunciado: "O Chain-of-Thought clássico (via prompt) exige ativar uma flag ou parâmetro na API.",
+      resposta: false,
+      explicacao: "Falso. O CoT clássico é só texto: basta instruir \"Pense passo a passo\" ou dar exemplos com raciocínio. O raciocínio sai misturado em `response.text`."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a técnica que instrui o modelo a raciocinar passo a passo antes de responder: Chain-of-________",
+      respostas: ["thought", "thoughts", "pensamento"],
+      explicacao: "Chain-of-Thought (CoT). A versão clássica é feita por prompt; a nativa é ativada pelo `ThinkingConfig` do SDK."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Ao usar `types.ThinkingConfig(include_thoughts=True)`, o que muda no consumo da resposta?",
+      opcoes: [
+        "O raciocínio passa a aparecer misturado dentro de `response.text`",
+        "`response.text` traz apenas a resposta final limpa, e os pensamentos ficam isolados nas parts",
+        "O modelo passa a responder somente em inglês",
+        "A temperatura é forçada para 0.0 automaticamente"
+      ],
+      correta: 1,
+      explicacao: "Com raciocínio nativo o SDK separa as coisas: a resposta final fica limpa em `response.text` e o raciocínio vai para as parts marcadas com `thought`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Onde ficam os blocos de pensamento interno quando o raciocínio nativo está ativado?",
+      opcoes: [
+        "Em `response.thoughts`",
+        "Em `response.text`, ao final da resposta",
+        "Em `candidates[0].content.parts`, nas parts com `part.thought == True`",
+        "Em um arquivo de log gerado pelo SDK"
+      ],
+      correta: 2,
+      explicacao: "Percorremos `response.candidates[0].content.parts` e filtramos as parts marcadas como `thought`. A métrica correspondente é `usage_metadata.thoughts_token_count`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que é **System Prompt Leaking**?",
+      opcoes: [
+        "Fazer a LLM revelar as instruções de sistema configuradas pelo desenvolvedor",
+        "Perder a chave de API em um repositório público",
+        "O modelo esquecer o system instruction depois de muitas mensagens",
+        "Uma falha de memória do servidor que expõe prompts de outros usuários"
+      ],
+      correta: 0,
+      explicacao: "É o ataque do agente \"Cycling Coach\" no Lakera: convencer o modelo a expor as diretivas secretas que deveriam ficar escondidas."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Em que consiste o ataque de **Delimiter Escaping**?",
+      opcoes: [
+        "Enviar mensagens longas até estourar a janela de contexto",
+        "Inserir o fechamento do delimitador (ex: `</user_query>`) para escapar da área controlada e injetar instruções",
+        "Trocar o modelo por outro mais permissivo",
+        "Usar caracteres invisíveis para ocultar a pergunta"
+      ],
+      correta: 1,
+      explicacao: "Se a entrada do usuário entra crua entre tags, fechar a tag na marra faz o resto do texto ser lido como instrução — por isso a Zona 1 do `ctf_guardian.py` neutraliza esses fechamentos."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Um `SYSTEM_INSTRUCTION` bem escrito é suficiente, sozinho, para impedir o vazamento do segredo.",
+      resposta: false,
+      explicacao: "Falso. Linguagem natural é sempre contornável com engenharia social, roleplay ou codificação. Por isso a defesa precisa ser em profundidade, com guardrails determinísticos em Python."
+    },
+    {
+      tipo: "completar",
+      enunciado: "A Zona 1 do Blue Team trata a entrada antes de chamar a API. Isso se chama sanitização de ________.",
+      respostas: ["entrada", "input"],
+      explicacao: "Sanitização de entrada (Input Guardrail): remover ou escapar trechos perigosos antes que o texto chegue ao modelo."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que faz o Output Guardrail (Zona 2) do desafio?",
+      opcoes: [
+        "Reescreve a pergunta do usuário antes de enviá-la",
+        "Inspeciona `response.text` em Python e censura a resposta antes de exibi-la na tela",
+        "Bloqueia o acesso à API depois de 10 tentativas",
+        "Reduz a temperatura quando detecta um ataque"
+      ],
+      correta: 1,
+      explicacao: "É uma checagem determinística sobre a saída: procurar termos proibidos, aplicar regex ou mascarar a credencial antes do `print`."
+    },
+    {
+      tipo: "vf",
+      enunciado: "No Mini-CTF, o Blue Team pode baixar a temperatura para 0.0 para deixar o guardião mais rígido.",
+      resposta: false,
+      explicacao: "Falso. A temperatura é congelada em 0.7 pelas regras de engajamento — baixar para 0.0 geraria recusa robótica determinística e mataria a graça do desafio."
+    },
+    {
+      tipo: "vf",
+      enunciado: "A `SECRET_PASSWORD` pode ser removida do `SYSTEM_INSTRUCTION` como estratégia de defesa.",
+      resposta: false,
+      explicacao: "Falso. A senha e a instrução de que ela é confidencial precisam permanecer no system instruction — sem segredo conhecido pelo modelo, não há o que proteger."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Por que é proibido ao Blue Team escrever algo como `if True: return \"Acesso negado\"`?",
+      opcoes: [
+        "Porque quebra a disponibilidade do assistente — é um DoS, e ele precisa seguir respondendo perguntas legítimas",
+        "Porque consome cota da API desnecessariamente",
+        "Porque o Python não aceita `return` fora de função",
+        "Porque revelaria a senha no traceback"
+      ],
+      correta: 0,
+      explicacao: "Uma defesa que desliga o produto não é defesa. O guardião tem que continuar conversando normalmente sobre outros assuntos."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quantas tentativas o Red Team tem em cada round do Mini-CTF?",
+      opcoes: ["3", "5", "10", "Ilimitadas até conseguir"],
+      correta: 2,
+      explicacao: "`MAX_TENTATIVAS = 10`, e o Blue Team não pode reduzir esse número."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que significa **Defesa em Profundidade** (Defense-in-Depth) neste contexto?",
+      opcoes: [
+        "Usar o modelo mais caro disponível",
+        "Combinar várias camadas: prompt defensivo + sanitização de entrada + filtro de saída",
+        "Guardar a senha criptografada no banco de dados",
+        "Registrar todas as tentativas de ataque em log"
+      ],
+      correta: 1,
+      explicacao: "Nenhuma camada sozinha segura: o prompt orienta, o guardrail de entrada limpa e o de saída censura. Se uma falha, a outra ainda pega."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem as 5 etapas da dinâmica do Mini-CTF:",
+      itens: [
+        "Formação dos quartetos e sorteio de quem começa atacando",
+        "Round 1 — Red Team estuda o ataque e Blue Team implementa as defesas",
+        "Round 1 — Execução do ataque na máquina do Blue Team",
+        "Inversão de papéis e preparação do Round 2",
+        "Round 2 — Execução do ataque com os papéis trocados"
+      ],
+      explicacao: "Todos atacam e defendem: o time se forma, prepara, ataca, inverte os papéis e ataca de novo. O debriefing no quadro vem depois dos dois rounds."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada técnica de prompting à sua definição:",
+      pares: [
+        ["Zero-Shot", "Pedir a tarefa sem nenhum exemplo resolvido"],
+        ["Few-Shot", "Incluir alguns exemplos resolvidos no prompt"],
+        ["Chain-of-Thought", "Instruir o modelo a raciocinar passo a passo"],
+        ["Delimitadores", "Isolar trechos do prompt com tags XML ou blocos Markdown"]
+      ],
+      explicacao: "Zero-shot e few-shot mudam quantos exemplos você dá; CoT muda como o modelo pensa; delimitadores mudam como o prompt é estruturado (e ajudam na defesa contra injeção)."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "No Lakera Agent Breakers, qual é o objetivo do agente **Thingularity**?",
+      opcoes: [
+        "Extrair o system prompt de um assistente de ciclismo",
+        "Vazar dados de uma testemunha protegida",
+        "Descobrir as ferramentas (tools) disponíveis para um agente de recomendação de produtos",
+        "Atacar um servidor MCP pela descrição"
+      ],
+      correta: 2,
+      explicacao: "É o desafio de Tool Reconnaissance: descobrir ferramentas ocultas de banco de dados e cupons — um bom spoiler do Function Calling que vem na Sprint 2."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
