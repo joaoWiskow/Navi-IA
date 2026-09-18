@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 05 | Embeddings, Similaridade Semântica &amp; ChromaDB</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 05",
+  titulo: "Embeddings, Similaridade Semântica & ChromaDB",
+  chave: "quiz_dia_05",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "O que é, na prática, um **embedding**?",
+      opcoes: [
+        "Um resumo do texto gerado pela LLM",
+        "Um vetor numérico onde textos de significado próximo ficam geometricamente próximos",
+        "Um índice invertido de palavras-chave do documento",
+        "Uma compressão do arquivo PDF para ocupar menos disco"
+      ],
+      correta: 1,
+      explicacao: "O embedding transforma texto em coordenadas num espaço de alta dimensão. A proximidade geométrica entre dois vetores vira proximidade de significado."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Uma busca léxica encontra a página sobre \"restauração de fábrica\" quando o usuário pergunta \"como resetar o relógio\".",
+      resposta: false,
+      explicacao: "Falso — e é justamente o que o laboratório mostra. A busca léxica procura as palavras exatas; como \"resetar\" não aparece no manual, ela falha onde a busca semântica acerta."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual modelo gratuito do Google usamos para gerar os embeddings?",
+      opcoes: ["gemini-3.8-flash", "gemini-embedding-001", "text-embedding-ada-002", "all-MiniLM-L6-v2"],
+      correta: 1,
+      explicacao: "`gemini-embedding-001`, chamado via `client.models.embed_content(...)`. O `gemini-3.8-flash` é o modelo de geração de texto, não de embeddings."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a métrica de distância configurada na coleção — `metadata={\"hnsw:space\": \"______\"}`:",
+      respostas: ["cosine", "cosseno"],
+      explicacao: "Similaridade de cosseno, ideal para embeddings de texto porque compara a direção dos vetores, não a magnitude."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome da biblioteca usada para extrair o texto das páginas do PDF: ______",
+      respostas: ["pypdf"],
+      explicacao: "`pypdf` — instalada com `pip install chromadb pypdf` e usada via `PdfReader(caminho).pages`."
+    },
+    {
+      tipo: "vf",
+      enunciado: "O ChromaDB precisa de um servidor externo ou de uma conta na nuvem para funcionar.",
+      resposta: false,
+      explicacao: "Falso. Ele é open-source e roda embutido no processo Python. O `PersistentClient` só grava os arquivos numa pasta local."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que `chromadb.PersistentClient(path=\"./chroma_data\")` faz?",
+      opcoes: [
+        "Sobe um servidor ChromaDB na porta 8000",
+        "Cria um banco em memória que some ao fechar o script",
+        "Cria ou reabre uma base salva em disco na pasta indicada",
+        "Envia os vetores para a nuvem do Chroma"
+      ],
+      correta: 2,
+      explicacao: "Persistente significa em disco: por isso o `buscador_semantico.py` consegue reabrir a coleção que o `indexar_documentos.py` criou antes."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quais informações o `collection.upsert(...)` recebe na indexação?",
+      opcoes: [
+        "Apenas o texto de cada página",
+        "`ids`, `embeddings`, `documents` e `metadatas`",
+        "Somente o vetor e o id",
+        "O arquivo PDF inteiro em bytes"
+      ],
+      correta: 1,
+      explicacao: "O id identifica o registro, o embedding permite a busca, o documento guarda o texto original e os metadados guardam arquivo e página para citar a fonte."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o método que consulta a coleção por similaridade: `collection.______(query_embeddings=[...], n_results=2)`",
+      respostas: ["query"],
+      explicacao: "`collection.query(...)` devolve `documents`, `metadatas` e `distances` dos vizinhos mais próximos."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "No script, a similaridade é calculada como `1.0 - dist`. O que isso significa?",
+      opcoes: [
+        "Quanto MAIOR a distância, maior a similaridade",
+        "Quanto MENOR a distância entre os vetores, maior a similaridade semântica",
+        "A similaridade é sempre um número inteiro",
+        "É apenas um valor estético, sem relação com a busca"
+      ],
+      correta: 1,
+      explicacao: "Distância e similaridade são inversas: vetores próximos (distância perto de 0) resultam em similaridade perto de 1, ou seja, 100%."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Dois textos que não compartilham nenhuma palavra ainda assim podem ter embeddings muito próximos.",
+      resposta: true,
+      explicacao: "Verdadeiro, e é o ponto central da busca semântica. \"Posso nadar com o relógio?\" e \"resistência à água 5 ATM\" não têm palavras em comum, mas falam da mesma coisa."
+    },
+    {
+      tipo: "vf",
+      enunciado: "A pergunta do usuário precisa ser convertida em embedding pelo mesmo modelo usado nos documentos.",
+      resposta: true,
+      explicacao: "Verdadeiro. Vetores de modelos diferentes vivem em espaços diferentes — comparar os dois produz resultados sem sentido."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Por que um banco relacional tradicional não resolve bem a busca vetorial?",
+      opcoes: [
+        "Porque não aceita armazenar números decimais",
+        "Porque não faz busca eficiente por vizinhos mais próximos (ANN) em vetores de alta dimensão",
+        "Porque tem limite de 1000 linhas por tabela",
+        "Porque não permite índices"
+      ],
+      correta: 1,
+      explicacao: "Índices B-tree servem para igualdade e ordenação, não para \"quem está mais perto neste espaço de centenas de dimensões\". Daí a existência dos bancos vetoriais com índices HNSW."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "No script de indexação, páginas com menos de 30 caracteres de texto são ignoradas. Por quê?",
+      opcoes: [
+        "Para economizar espaço em disco",
+        "Porque são páginas sem conteúdo textual relevante (capas, imagens) que só sujariam a busca",
+        "Porque o ChromaDB rejeita textos curtos",
+        "Porque o modelo de embedding exige no mínimo 30 caracteres"
+      ],
+      correta: 1,
+      explicacao: "Indexar uma página praticamente vazia gera um vetor sem significado que pode aparecer como falso positivo nos resultados."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Para que servem os `metadatas` gravados junto de cada página?",
+      opcoes: [
+        "Para acelerar o cálculo do embedding",
+        "Para rastrear a origem (arquivo e página) e permitir citar a fonte na resposta",
+        "Para criptografar o conteúdo indexado",
+        "Para definir a ordem de exibição dos resultados"
+      ],
+      correta: 1,
+      explicacao: "É a base da rastreabilidade do AskData: sem metadados não dá para dizer \"isso está na página 9 do manual\"."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem as etapas do `indexar_documentos.py`:",
+      itens: [
+        "Ler o PDF e extrair o texto de cada página com `pypdf`",
+        "Inicializar o `PersistentClient` do ChromaDB",
+        "Criar ou obter a coleção com distância de cosseno",
+        "Gerar o embedding do texto de cada página",
+        "Fazer `upsert` do vetor, do texto e dos metadados na coleção"
+      ],
+      explicacao: "Primeiro extrair o conteúdo, depois preparar o banco e a coleção, e só então vetorizar e gravar página por página."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada conceito à sua definição:",
+      pares: [
+        ["Embedding", "Representação vetorial do significado de um texto"],
+        ["Busca léxica", "Procura ocorrências exatas das palavras digitadas"],
+        ["Busca semântica", "Procura por proximidade de significado entre vetores"],
+        ["Banco vetorial", "Armazena vetores e busca vizinhos mais próximos"]
+      ],
+      explicacao: "O embedding é o dado, o banco vetorial é onde ele mora, e as duas buscas são estratégias concorrentes — a léxica casa palavra, a semântica casa sentido."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
