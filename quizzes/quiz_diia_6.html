@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 06 | Kickoff do AskData, Coleta de Dados &amp; Setup Colaborativo</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 06",
+  titulo: "Kickoff do AskData, Coleta de Dados & Setup Colaborativo",
+  chave: "quiz_dia_06",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "A sigla **RAG** significa:",
+      opcoes: [
+        "Retrieval-Augmented Generation",
+        "Rapid Answer Generation",
+        "Recursive Agent Grounding",
+        "Ranked Attention Gateway"
+      ],
+      correta: 0,
+      explicacao: "Geração Aumentada de Recuperação: primeiro recupera trechos relevantes de uma base privada, depois gera a resposta ancorada neles."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual é o principal benefício do RAG para uma empresa?",
+      opcoes: [
+        "Deixar o modelo mais rápido",
+        "Responder com base em documentos privados e atualizados, reduzindo alucinação, sem precisar re-treinar a LLM",
+        "Eliminar completamente o custo de API",
+        "Permitir rodar a LLM sem internet"
+      ],
+      correta: 1,
+      explicacao: "Atualizar a base de conhecimento é só trocar os documentos — muito mais barato e rápido do que re-treinar ou fazer fine-tuning do modelo."
+    },
+    {
+      tipo: "vf",
+      enunciado: "PDFs formados por fotos ou digitalizações servem bem como base de conhecimento do projeto.",
+      resposta: false,
+      explicacao: "Falso. Sem texto digital nativo, o `pypdf` não extrai nada — seria necessário OCR, que está fora do escopo da Sprint. Escolham PDFs com texto selecionável."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual é a extensão total recomendada para os documentos coletados pelo trio?",
+      opcoes: [
+        "1 a 3 páginas",
+        "15 a 60 páginas",
+        "100 a 200 páginas",
+        "Quanto mais páginas, melhor"
+      ],
+      correta: 1,
+      explicacao: "Documentos curtos demais não mostram valor na busca semântica; gigantes demais gastam a cota gratuita de embeddings e demoram para indexar."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quantos arquivos reais cada trio deve selecionar no Bloco 3?",
+      opcoes: ["1 arquivo", "3 a 5 arquivos", "10 a 15 arquivos", "Não há número definido"],
+      correta: 1,
+      explicacao: "De 3 a 5 arquivos, baixados e validados até as 15:30, prontos para entrar na pasta `data/`."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome da pasta onde ficam os documentos coletados pelo trio: `______/`",
+      respostas: ["data"],
+      explicacao: "A pasta `data/` é lida pelo `src/ingestion.py` com `glob` para encontrar os PDFs e Markdowns."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome da pasta local do banco vetorial que NÃO deve ir para o Git: `__________/`",
+      respostas: ["chroma_db", "chromadb"],
+      explicacao: "`chroma_db/` é gerado localmente por cada integrante e entra no `.gitignore` — o banco se reconstrói rodando a ingestão."
+    },
+    {
+      tipo: "vf",
+      enunciado: "O arquivo `.env` e a pasta `chroma_db/` devem estar listados no `.gitignore` do projeto.",
+      resposta: true,
+      explicacao: "Verdadeiro. O `.gitignore` obrigatório inclui `.venv/`, `.env`, `chroma_db/`, `__pycache__/`, `*.pyc` e `.DS_Store`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "No modelo Piloto/Copiloto Rotativo, o que fazem os copilotos?",
+      opcoes: [
+        "Esperam sua vez sem participar",
+        "Analisam a lógica, pesquisam parâmetros, inspecionam tracebacks e validam os resultados",
+        "Escrevem a documentação enquanto o piloto programa",
+        "Apenas revisam o código no fim do dia"
+      ],
+      correta: 1,
+      explicacao: "Os copilotos são navegadores ativos: pensam junto, questionam e validam. A ideia é que todos aprendam o pipeline inteiro, não só o pedaço que digitaram."
+    },
+    {
+      tipo: "vf",
+      enunciado: "No modelo rotativo, o mesmo integrante fica com o teclado durante todos os dias de projeto.",
+      resposta: false,
+      explicacao: "Falso. A escala roda: um pilota no Dia 07 (ingestão), outro no Dia 08 (RAG engine) e o terceiro no Dia 09 (Streamlit). No Demo Day todos apresentam."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual desses domínios NÃO combina com os critérios de seleção do projeto?",
+      opcoes: [
+        "Regulamentos e manuais de estágio da PUCRS",
+        "Documentação oficial de ferramentas como Airflow ou Docker",
+        "Uma coletânea de fotos de quadro branco tiradas no celular",
+        "Guia da LGPD e políticas de privacidade"
+      ],
+      correta: 2,
+      explicacao: "Fotos não têm texto extraível. Os bons candidatos são documentos ricos em fatos e com texto nativo: manuais, regulamentos, documentações e relatórios."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que o `README.md` inicial do repositório do trio deve informar?",
+      opcoes: [
+        "Apenas o nome do repositório",
+        "Os nomes dos integrantes e o domínio temático escolhido",
+        "O código completo do pipeline",
+        "As chaves de API de cada integrante"
+      ],
+      correta: 1,
+      explicacao: "Integrantes e domínio — e nunca chaves de API, que vivem só no `.env` de cada máquina."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Basta um integrante clonar o repositório: os outros dois podem trabalhar na máquina dele.",
+      resposta: false,
+      explicacao: "Falso. Os três clonam, os três são colaboradores com permissão de escrita e todos precisam conseguir dar `pull` e ver os arquivos em `data/`."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem o fluxo do pipeline de ingestão apresentado no diagrama do kickoff:",
+      itens: [
+        "Documentos coletados em `data/` (PDFs e Markdowns)",
+        "Extração de texto e metadados",
+        "Chunking estratégico (700 caracteres com 100 de overlap)",
+        "Geração de embeddings com `gemini-embedding-001`",
+        "Persistência no ChromaDB local"
+      ],
+      explicacao: "Esse é o caminho do Dia 07. Só depois de tudo indexado é que o Dia 08 monta a consulta (embedding da pergunta → busca top-k → prompt → resposta)."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada arquivo da estrutura padronizada à sua função:",
+      pares: [
+        ["`src/ingestion.py`", "Chunking, embeddings e carga no banco vetorial"],
+        ["`src/rag_engine.py`", "Busca vetorial e geração da resposta ancorada"],
+        ["`src/app.py`", "Interface web de chat com Streamlit"],
+        ["`requirements.txt`", "Lista de dependências para reproduzir o ambiente"]
+      ],
+      explicacao: "Cada arquivo corresponde a um dia: ingestão no 07, motor RAG no 08 e interface no 09 — com o `requirements.txt` fechando a reprodutibilidade do projeto."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
