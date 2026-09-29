@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 09 | Interface com Streamlit, Explicabilidade &amp; Pitch</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 09",
+  titulo: "Interface com Streamlit, Explicabilidade & Pitch",
+  chave: "quiz_dia_09",
+  perguntas: [
+    {
+      tipo: "vf",
+      enunciado: "O Streamlit re-executa o script inteiro a cada interação do usuário.",
+      resposta: true,
+      explicacao: "Verdadeiro, e isso explica praticamente tudo no framework: é por causa do rerun que precisamos de `st.session_state` para o histórico e de cache para objetos caros."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Para que serve o decorador `@st.cache_resource` no `get_rag_engine()`?",
+      opcoes: [
+        "Salvar as respostas do modelo em disco",
+        "Evitar recriar o motor RAG (e reabrir o ChromaDB) a cada rerun do script",
+        "Armazenar o histórico do chat entre sessões",
+        "Comprimir os embeddings na memória"
+      ],
+      correta: 1,
+      explicacao: "Sem cache, cada mensagem reinstanciaria cliente Gemini e ChromaDB — lento e desnecessário, já que o objeto é o mesmo."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o objeto que guarda o histórico da conversa entre reruns: `st.session_______`",
+      respostas: ["state"],
+      explicacao: "`st.session_state` é o dicionário que sobrevive aos reruns — é ali que a lista `messages` é guardada."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que `st.chat_input(...)` devolve quando o usuário ainda não digitou nada?",
+      opcoes: ["Uma string vazia", "`None` (por isso o código usa `if prompt := st.chat_input(...)`)", "`False`", "Um erro"],
+      correta: 1,
+      explicacao: "Por isso o walrus operator: só entra no bloco quando existe mensagem nova. Em todo rerun sem input, o valor é `None`."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual é o propósito do expander \"Ver Fontes & Chunks Recuperados\"?",
+      opcoes: [
+        "Mostrar o código-fonte da aplicação",
+        "Explicabilidade: deixar o usuário inspecionar os trechos que embasaram a resposta, com similaridade e página",
+        "Exibir o log de erros do Python",
+        "Permitir editar os documentos indexados"
+      ],
+      correta: 1,
+      explicacao: "É o diferencial do AskData na demo: a resposta não é uma caixa-preta, dá para abrir e conferir de onde cada informação veio."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o comando que sobe a aplicação: `streamlit ___ src/app.py`",
+      respostas: ["run"],
+      explicacao: "`streamlit run src/app.py`. Rodar com `python src/app.py` não funciona: quem serve a aplicação é o próprio Streamlit."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que o slider de Top-K na barra lateral permite fazer durante a demonstração?",
+      opcoes: [
+        "Trocar o modelo Gemini usado",
+        "Ajustar quantos chunks recuperados alimentam o contexto da resposta",
+        "Mudar a temperatura da geração",
+        "Limpar o banco vetorial"
+      ],
+      correta: 1,
+      explicacao: "O valor do slider é passado para `responder_pergunta(prompt, top_k=top_k)` — ótimo para mostrar ao vivo o efeito de recuperar mais ou menos contexto."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Como o repositório do trio pode ser privado, não há problema em commitar o `.env` e a pasta `chroma_db/`.",
+      resposta: false,
+      explicacao: "Falso. Repositório privado não é cofre de credenciais, e o banco vetorial é artefato local reconstruível. Ambos seguem no `.gitignore`."
+    },
+    {
+      tipo: "vf",
+      enunciado: "`pip freeze > requirements.txt` é a forma sugerida de registrar as dependências do projeto.",
+      resposta: true,
+      explicacao: "Verdadeiro. É o que garante que qualquer pessoa consiga recriar o ambiente do trio a partir do repositório."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quanto tempo dura o pitch ensaiado no Bloco 4?",
+      opcoes: ["5 minutos", "10 minutos", "15 minutos", "20 minutos"],
+      correta: 1,
+      explicacao: "10 minutos cronometrados, com a fala dividida entre os três integrantes — no Demo Day são 10 de apresentação + 5 de Q&A."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quais duas perguntas devem obrigatoriamente aparecer na Live Demo?",
+      opcoes: [
+        "Duas perguntas fáceis, para garantir que tudo funcione",
+        "Uma com resposta correta e citação de página, e outra fora de domínio mostrando a recusa anti-alucinação",
+        "Uma sobre o código e outra sobre o cronograma do projeto",
+        "Qualquer pergunta, desde que o modelo responda rápido"
+      ],
+      correta: 1,
+      explicacao: "Mostrar só o caminho feliz esconde o principal mérito técnico do projeto: o assistente sabe dizer \"não sei\" quando a informação não está na base."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Para ganhar tempo no pitch, é melhor que apenas um integrante do trio fale.",
+      resposta: false,
+      explicacao: "Falso. A fala é distribuída entre os três — a banca da DataLakers está avaliando trabalho em equipe e comunicação técnica de todos."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que o `README.md` final do trio precisa conter?",
+      opcoes: [
+        "Apenas o nome do projeto",
+        "Nome do projeto, integrantes, domínio indexado e guia rápido de execução",
+        "O histórico completo de commits",
+        "As respostas do assistente aos testes de estresse"
+      ],
+      correta: 1,
+      explicacao: "Quem clonar o repositório precisa conseguir criar o `.venv`, instalar as dependências, rodar a ingestão e subir o Streamlit sem perguntar nada a ninguém."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a função que exibe uma mensagem de erro na tela do Streamlit: `st._____(\"Erro ao processar...\")`",
+      respostas: ["error"],
+      explicacao: "`st.error(...)` — usada tanto no bloco de inicialização do motor quanto no tratamento de exceção durante a resposta."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem o que o `app.py` faz quando o usuário envia uma pergunta:",
+      itens: [
+        "Guardar a mensagem do usuário em `st.session_state.messages`",
+        "Exibir a mensagem do usuário com `st.chat_message(\"user\")`",
+        "Mostrar o spinner enquanto busca e gera a resposta",
+        "Chamar `engine.responder_pergunta(prompt, top_k=top_k)`",
+        "Renderizar a resposta com o expander de fontes e salvá-la no histórico"
+      ],
+      explicacao: "O histórico é atualizado nas duas pontas (pergunta e resposta) para que o rerun seguinte consiga redesenhar a conversa inteira."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada componente do Streamlit à sua função:",
+      pares: [
+        ["`st.chat_message`", "Desenha uma bolha de conversa do usuário ou do assistente"],
+        ["`st.sidebar`", "Painel lateral com controles e informações da base"],
+        ["`st.spinner`", "Indicador de carregamento durante a busca e a geração"],
+        ["`st.expander`", "Bloco recolhível usado para exibir as fontes"]
+      ],
+      explicacao: "São quatro peças simples que, juntas, entregam uma interface de chat com explicabilidade — em Python puro, sem nenhuma linha de frontend."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

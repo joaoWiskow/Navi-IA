@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade — Dia 11 | Structured Outputs, Schemas &amp; Pydantic</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este atividade precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 11",
+  "titulo": "Structured Outputs, Schemas & Pydantic",
+  "chave": "atividade_dia_11",
+  "perguntas": [
+    {
+      "tipo": "sandbox",
+      "enunciado": "**Cumpra o contrato.** Escreva um JSON que seja um `PerfilUsuario` válido (campos `nome`, `idade`, `habilidades` e `status`, com status entre \"ativo\", \"inativo\" e \"pendente\").",
+      "validador": "perfil_usuario",
+      "esperado": "aceito",
+      "placeholder": "{\n  \"nome\": \"...\",\n  \"idade\": 0,\n  \"habilidades\": [\"...\"],\n  \"status\": \"...\"\n}",
+      "linhas": 7,
+      "explicacao": "Um JSON válido tem `nome` (texto), `idade` (inteiro de 0 a 120), `habilidades` (lista de textos) e `status` dentro do conjunto permitido. É exatamente o que o Pydantic conferiria."
+    },
+    {
+      "tipo": "sandbox",
+      "enunciado": "**Quebre o contrato.** Agora escreva um JSON que o `PerfilUsuario` **recuse** (por exemplo, com uma idade escrita por extenso ou um status fora da lista). Veja a mensagem e pense em qual camada ela apareceria: no modelo ou no Pydantic.",
+      "validador": "perfil_usuario",
+      "esperado": "recusado",
+      "placeholder": "{\"nome\": \"Marina\", \"idade\": \"trinta\", ...}",
+      "linhas": 6,
+      "explicacao": "Qualquer violação serve: `idade` como texto, status inexistente, lista vazia. No projeto, o `response_schema` evita quase todos esses casos na geração e o Pydantic captura o resto na validação."
+    },
+    {
+      "tipo": "bug",
+      "enunciado": "Este script deveria devolver um `PerfilUsuario`, mas falha na hora de configurar o schema. **Qual linha contém o erro?**",
+      "codigo": [
+        "class PerfilUsuario(BaseModel):",
+        "    nome: str",
+        "    idade: int",
+        "",
+        "response = client.models.generate_content(",
+        "    model=MODEL,",
+        "    contents=texto,",
+        "    config=types.GenerateContentConfig(",
+        "        response_mime_type=\"application/json\",",
+        "        response_schema=PerfilUsuario(),",
+        "    ),",
+        ")",
+        "perfil = response.parsed"
+      ],
+      "bug": [
+        9
+      ],
+      "explicacao": "`response_schema` recebe a **classe** (`PerfilUsuario`), não uma instância. Com os parênteses, o Python tenta criar um objeto sem os campos obrigatórios e o contrato nem chega ao modelo."
+    },
+    {
+      "tipo": "classificar",
+      "enunciado": "**Quem garante o quê?** Classifique cada item: o `response_schema` garante, ou é responsabilidade do seu código (validadores e testes)?",
+      "categorias": [
+        "O schema garante",
+        "Meu código precisa validar"
+      ],
+      "itens": [
+        [
+          "O campo `idade` é sempre um número inteiro",
+          0
+        ],
+        [
+          "A resposta nunca vem envolta em cercas de markdown",
+          0
+        ],
+        [
+          "`status` é um dos valores do `Enum`",
+          0
+        ],
+        [
+          "A idade extraída é mesmo a que está no texto original",
+          1
+        ],
+        [
+          "`registros_afetados` nunca é negativo (regra de negócio)",
+          1
+        ],
+        [
+          "O resumo realmente reflete o relatório de auditoria",
+          1
+        ]
+      ],
+      "explicacao": "A **forma** (tipos, enums, ausência de texto extra) vem do schema. O **significado** (valor certo, regra de negócio, fidelidade ao texto) continua sendo seu: validadores Pydantic, testes e revisão."
+    },
+    {
+      "tipo": "ordenar",
+      "enunciado": "Coloque em ordem o fluxo de uma extração estruturada:",
+      "itens": [
+        "Declarar a classe Pydantic com os campos",
+        "Passar a classe em `response_schema` na configuração",
+        "Chamar `generate_content` com o texto a extrair",
+        "Ler o objeto pronto em `response.parsed`",
+        "Tratar `ValidationError` e regras de negócio"
+      ],
+      "explicacao": "Primeiro o contrato, depois a configuração, a chamada, a leitura do resultado tipado e, por fim, a defesa contra dados inválidos."
+    }
+  ],
+  "rotulo": "Atividade"
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

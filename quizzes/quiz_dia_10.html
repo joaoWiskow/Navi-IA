@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 10 | Demo Day, Retrospectiva &amp; Fechamento da Sprint 1</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 10",
+  titulo: "Demo Day, Retrospectiva & Fechamento da Sprint 1",
+  chave: "quiz_dia_10",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "Quanto tempo cada trio tem no Demo Day?",
+      opcoes: [
+        "10 minutos, sendo 8 de apresentação e 2 de perguntas",
+        "15 minutos, sendo 10 de apresentação e live demo e 5 de Q&A",
+        "20 minutos livres",
+        "30 minutos, com intervalo entre os blocos"
+      ],
+      correta: 1,
+      explicacao: "15 minutos rigorosamente cronometrados por trio: 10 de apresentação com demonstração ao vivo e 5 de perguntas e respostas."
+    },
+    {
+      tipo: "vf",
+      enunciado: "A rodada de Q&A com a banca é opcional e pode ser dispensada se o trio usar todo o tempo apresentando.",
+      resposta: false,
+      explicacao: "Falso. Os 5 minutos de Q&A fazem parte do formato — é onde a coordenação e os convidados da DataLakers sondam as decisões técnicas do time."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O que a Live Demo precisa mostrar?",
+      opcoes: [
+        "Apenas o código-fonte do projeto rodando no VS Code",
+        "Busca semântica funcionando, citação das páginas e o teste anti-alucinação",
+        "Somente a tela inicial da aplicação",
+        "Um vídeo gravado previamente da aplicação"
+      ],
+      correta: 1,
+      explicacao: "Os três elementos juntos provam o pipeline inteiro: a recuperação funciona, a resposta é rastreável e o assistente recusa o que não está nos documentos."
+    },
+    {
+      tipo: "vf",
+      enunciado: "A demonstração ao vivo deve incluir uma pergunta fora do domínio para evidenciar a recusa anti-alucinação.",
+      resposta: true,
+      explicacao: "Verdadeiro. Saber dizer \"não encontrei isso nos documentos\" é entrega técnica, não falha — e é o que separa um RAG confiável de um chatbot que inventa."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o nome da dinâmica ágil de retrospectiva usada hoje: Learning ________",
+      respostas: ["matrix", "matriz"],
+      explicacao: "Learning Matrix — uma matriz de aprendizado dividida em quadrantes, conduzida no quadro branco por um voluntário da turma."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quantos quadrantes tem a Learning Matrix da retrospectiva?",
+      opcoes: ["2", "3", "4", "6"],
+      correta: 2,
+      explicacao: "Quatro: aprendizados técnicos, aprendizados não-técnicos, pedras no sapato e mudanças para a próxima sprint."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quanto tempo é reservado para a retrospectiva?",
+      opcoes: ["10 minutos", "20 minutos", "35 minutos", "1 hora"],
+      correta: 2,
+      explicacao: "35 minutos cronometrados: 5 de reflexão individual, 10 de alinhamento no trio e 20 de mapeamento coletivo no quadro."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem as etapas da Learning Matrix:",
+      itens: [
+        "Reflexão individual e escrita dos post-its",
+        "Alinhamento das percepções dentro do trio",
+        "Mapeamento coletivo no quadro com o voluntário agrupando os temas"
+      ],
+      explicacao: "Do individual para o coletivo: primeiro cada um pensa sozinho (sem ancorar na opinião alheia), depois o trio compara e por fim a turma consolida."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada quadrante da Learning Matrix à pergunta que ele responde:",
+      pares: [
+        ["Aprendizados técnicos", "O que virou chave em código, teoria e ferramentas de GenAI?"],
+        ["Aprendizados não-técnicos", "O que aprendi sobre equipe, comunicação e apresentação?"],
+        ["Pedras no sapato", "O que quase travou o time e como resolvemos?"],
+        ["Mudanças para a Sprint 2", "O que faremos diferente na próxima sprint?"]
+      ],
+      explicacao: "Dois quadrantes olham para o que foi ganho, um para o que doeu e um para o que muda daqui pra frente."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Os trios da Sprint 1 permanecem exatamente os mesmos na Sprint 2.",
+      resposta: false,
+      explicacao: "Falso. Novos trios são formados para ampliar o networking e a colaboração entre os participantes."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quais são os temas centrais da Sprint 2?",
+      opcoes: [
+        "Multimodalidade, visão computacional e áudio",
+        "Agentes autônomos, Function/Tool Calling e Model Context Protocol (MCP)",
+        "Fine-tuning e treinamento de modelos próprios",
+        "Engenharia de dados e pipelines ETL"
+      ],
+      correta: 1,
+      explicacao: "Multimodalidade fica para a Sprint 3. A Sprint 2 é sobre fazer a LLM agir, e não apenas responder."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a sigla do protocolo que será estudado na Sprint 2: Model Context Protocol (___)",
+      respostas: ["mcp"],
+      explicacao: "MCP — o protocolo que padroniza como modelos conversam com ferramentas e fontes de contexto externas."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual frase resume melhor a virada da Sprint 1 para a Sprint 2?",
+      opcoes: [
+        "De modelos pequenos para modelos grandes",
+        "De ler e responder documentos (RAG) para agir no mundo real com ferramentas",
+        "De Python para JavaScript",
+        "De projetos individuais para projetos em trio"
+      ],
+      correta: 1,
+      explicacao: "Na Sprint 1 a LLM consulta uma base e responde; na Sprint 2 ela chama funções e executa ações através de agentes."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Quem compõe a plateia avaliadora do Demo Day?",
+      opcoes: [
+        "Apenas os colegas da turma",
+        "Somente o monitor do grupo de estudos",
+        "Colegas, coordenação do Navi Hub e liderança/gestores da DataLakers",
+        "Um júri externo contratado"
+      ],
+      correta: 2,
+      explicacao: "É também um momento de scouting: a liderança da DataLakers está presente avaliando proatividade, qualidade técnica e capacidade de entrega."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Na apresentação, explicar os desafios enfrentados e as decisões de engenharia tomadas faz parte do roteiro esperado.",
+      resposta: true,
+      explicacao: "Verdadeiro. Contar o que quebrou e como o time resolveu costuma impressionar mais a banca do que uma demo em que tudo parece ter dado certo de primeira."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

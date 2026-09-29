@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 07 | Chunking &amp; Ingestão no ChromaDB</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  dia: "Dia 07",
+  titulo: "Chunking & Ingestão no ChromaDB",
+  chave: "quiz_dia_07",
+  perguntas: [
+    {
+      tipo: "multipla",
+      enunciado: "O que é **chunking** em uma aplicação de RAG?",
+      opcoes: [
+        "Comprimir o PDF antes de enviá-lo à API",
+        "Dividir o texto em blocos menores antes de gerar os embeddings",
+        "Resumir cada documento com a LLM",
+        "Remover páginas irrelevantes do documento"
+      ],
+      correta: 1,
+      explicacao: "Chunking é fatiar o texto. Cada bloco vira um vetor no banco, e é o bloco — não o documento inteiro — que será recuperado na busca."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Para que serve o **overlap** (sobreposição) entre chunks?",
+      opcoes: [
+        "Para gerar mais chunks e ocupar melhor o banco",
+        "Para evitar que uma frase ou ideia seja cortada ao meio e perdida entre dois blocos",
+        "Para duplicar os dados como backup",
+        "Para acelerar a geração dos embeddings"
+      ],
+      correta: 1,
+      explicacao: "Sem sobreposição, um corte no meio de uma frase deixa as duas metades sem sentido. O overlap garante que o contexto da fronteira apareça inteiro em pelo menos um dos blocos."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete o tamanho padrão de bloco usado em `criar_chunks(...)`: `chunk_size = ______`",
+      respostas: ["700"],
+      explicacao: "700 caracteres por chunk, com 100 de sobreposição — os valores de partida do `src/ingestion.py`."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a sobreposição padrão usada em `criar_chunks(...)`: `chunk_overlap = ______`",
+      respostas: ["100"],
+      explicacao: "100 caracteres repetidos entre um bloco e o seguinte."
+    },
+    {
+      tipo: "vf",
+      enunciado: "Com `chunk_size = 700` e `chunk_overlap = 100`, o início do próximo chunk avança 600 caracteres.",
+      resposta: true,
+      explicacao: "Verdadeiro: no laço, `inicio += (chunk_size - chunk_overlap)`, ou seja, 700 − 100 = 600."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Qual é o risco de usar chunks **muito grandes**?",
+      opcoes: [
+        "O ChromaDB rejeita textos longos",
+        "O bloco recuperado traz muito conteúdo irrelevante junto, diluindo a precisão da resposta",
+        "O embedding fica com menos dimensões",
+        "O overlap deixa de funcionar"
+      ],
+      correta: 1,
+      explicacao: "Chunk grande vira um resumo vago de vários assuntos: o vetor perde especificidade e a LLM recebe ruído junto com o trecho útil."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "E qual é o risco de chunks **muito pequenos**?",
+      opcoes: [
+        "Perdem o contexto ao redor e a resposta sai fragmentada ou incompleta",
+        "Consomem mais espaço em disco que chunks grandes",
+        "Impedem o uso da similaridade de cosseno",
+        "Fazem o `pypdf` falhar na leitura"
+      ],
+      correta: 0,
+      explicacao: "Um pedaço curto demais pode conter a frase certa sem a informação que a explica — o modelo recupera o trecho e ainda assim não consegue responder."
+    },
+    {
+      tipo: "vf",
+      enunciado: "O ChromaDB usa SQLite para os metadados e arquivos HNSW para os índices vetoriais.",
+      resposta: true,
+      explicacao: "Verdadeiro. É o que acontece por baixo do `PersistentClient`, tudo dentro da pasta local — sem servidor, sem nuvem e sem custo."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "O id de cada chunk segue o padrão `arquivo_p1_c2`. Qual é a vantagem disso?",
+      opcoes: [
+        "Deixa a busca mais rápida",
+        "Dá rastreabilidade (arquivo, página e posição) e torna o `upsert` idempotente",
+        "Reduz o tamanho do vetor gerado",
+        "Permite ordenar alfabeticamente os resultados"
+      ],
+      correta: 1,
+      explicacao: "Como o id é determinístico, rodar a ingestão duas vezes atualiza o mesmo registro em vez de duplicar o conteúdo no banco."
+    },
+    {
+      tipo: "vf",
+      enunciado: "`get_or_create_collection(...)` lança erro se a coleção já existir.",
+      resposta: false,
+      explicacao: "Falso — o próprio nome diz: pega se existir, cria se não existir. Por isso o script pode ser executado várias vezes sem quebrar."
+    },
+    {
+      tipo: "completar",
+      enunciado: "Complete a métrica configurada na criação da coleção: `metadata={\"hnsw:space\": \"______\"}`",
+      respostas: ["cosine", "cosseno"],
+      explicacao: "Similaridade de cosseno, a métrica padrão para embeddings de texto."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Por que gravar `arquivo` e `pagina` nos metadados de cada chunk é essencial no AskData?",
+      opcoes: [
+        "Porque o ChromaDB exige ao menos um metadado",
+        "Porque é o que permite a resposta citar a fonte exata consultada",
+        "Porque reduz o custo da API de embeddings",
+        "Porque acelera o chunking"
+      ],
+      correta: 1,
+      explicacao: "A entrega do projeto exige citar documento e página. Sem esses metadados, a resposta até sai, mas sem rastreabilidade — e é justamente ela que diferencia o RAG de um chute bem escrito."
+    },
+    {
+      tipo: "multipla",
+      enunciado: "Se a chamada de embeddings começar a estourar limite de cota, qual é a saída simples sugerida no roteiro?",
+      opcoes: [
+        "Trocar para um modelo pago",
+        "Reduzir o número de páginas pela metade",
+        "Adicionar um pequeno delay entre as chamadas, com `time.sleep(0.5)`",
+        "Rodar a ingestão em outra máquina"
+      ],
+      correta: 2,
+      explicacao: "Espaçar as requisições resolve a maior parte dos erros de rate limit sem mudar nada do pipeline."
+    },
+    {
+      tipo: "vf",
+      enunciado: "A pasta `chroma_db/` deve ser commitada para que os colegas não precisem rodar a ingestão.",
+      resposta: false,
+      explicacao: "Falso. Ela fica no `.gitignore`: é um artefato local, pesado e reconstruível — cada integrante roda `python src/ingestion.py` na própria máquina."
+    },
+    {
+      tipo: "ordenar",
+      enunciado: "Coloque na ordem as etapas do `src/ingestion.py`:",
+      itens: [
+        "Varrer a pasta `data/` atrás de PDFs e Markdowns",
+        "Extrair o texto de cada página com os metadados de origem",
+        "Dividir o texto em chunks com sobreposição",
+        "Gerar o embedding de cada chunk",
+        "Fazer `upsert` dos chunks e metadados no ChromaDB"
+      ],
+      explicacao: "Ler, extrair, fatiar, vetorizar e gravar. O `test_chroma_setup.py` serve para validar o último passo antes de plugar a leitura pesada dos PDFs."
+    },
+    {
+      tipo: "associar",
+      enunciado: "Associe cada elemento ao seu papel na ingestão:",
+      pares: [
+        ["`chunk_size`", "Tamanho de cada bloco de texto"],
+        ["`chunk_overlap`", "Trecho repetido entre blocos vizinhos"],
+        ["`PersistentClient`", "Cliente que grava o banco vetorial em disco"],
+        ["`upsert`", "Insere ou atualiza o registro pelo id"]
+      ],
+      explicacao: "Os dois primeiros definem COMO o texto é fatiado; os dois últimos definem ONDE e COMO ele é gravado."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

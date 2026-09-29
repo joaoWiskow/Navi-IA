@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade — Dia 12 | Function Calling &amp; Ferramentas Nativas</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este atividade precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 12",
+  "titulo": "Function Calling & Ferramentas Nativas",
+  "chave": "atividade_dia_12",
+  "perguntas": [
+    {
+      "tipo": "ordenar",
+      "enunciado": "Reconstrua o **despachador**: coloque as linhas do laço na ordem correta.",
+      "itens": [
+        "response = client.models.generate_content(model=MODEL, contents=contents, config=config)",
+        "contents.append(response.candidates[0].content)",
+        "for chamada in response.function_calls:",
+        "    resultado = FERRAMENTAS[chamada.name](**chamada.args)",
+        "contents.append(types.Content(role=\"user\", parts=partes_resposta))"
+      ],
+      "explicacao": "Chamar o modelo, guardar o turno dele, percorrer as chamadas, executar cada uma e devolver todos os resultados numa mensagem do usuário.",
+      "codigo": true
+    },
+    {
+      "tipo": "bug",
+      "enunciado": "O modelo pediu uma ferramenta, mas a resposta final nunca chega. **Qual linha do fechamento do ciclo está errada?**",
+      "codigo": [
+        "contents.append(response.candidates[0].content)",
+        "for chamada in response.function_calls:",
+        "    resultado = FERRAMENTAS[chamada.name](**chamada.args)",
+        "    partes.append(types.Part.from_function_response(name=chamada.name, response={\"result\": resultado}))",
+        "return response.text"
+      ],
+      "bug": [
+        4
+      ],
+      "explicacao": "Depois de executar as ferramentas é preciso **reenviar** o histórico com os `function_response` e chamar o modelo de novo. Devolver `response.text` da primeira resposta retorna vazio, porque o modelo respondeu com uma chamada, não com texto."
+    },
+    {
+      "tipo": "classificar",
+      "enunciado": "**Quem faz o quê?** Classifique cada ação: é do modelo ou do seu código Python?",
+      "categorias": [
+        "Modelo",
+        "Seu código"
+      ],
+      "itens": [
+        [
+          "Decidir se a pergunta precisa de ferramenta",
+          0
+        ],
+        [
+          "Escolher os valores dos argumentos a partir da pergunta",
+          0
+        ],
+        [
+          "Executar `calcular_faturamento(\"Sul\", 2025)`",
+          1
+        ],
+        [
+          "Tratar a exceção de divisão por zero",
+          1
+        ],
+        [
+          "Redigir a resposta final em português",
+          0
+        ],
+        [
+          "Decidir que uma ferramenta não pode rodar por segurança",
+          1
+        ]
+      ],
+      "explicacao": "O modelo **decide e redige**; o seu código **executa e protege**. Essa separação é o que torna possível inserir guardrails."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe o sintoma ao provável causador nas suas docstrings:",
+      "pares": [
+        [
+          "O modelo chama a ferramenta errada",
+          "Descrições parecidas ou vagas entre ferramentas"
+        ],
+        [
+          "O modelo passa `\"sul\"` quando só aceita `\"Sul\"`",
+          "Faltam os valores válidos na docstring do parâmetro"
+        ],
+        [
+          "O modelo chama ferramenta para pergunta conceitual",
+          "Docstring diz \"use sempre\" sem restringir o caso de uso"
+        ],
+        [
+          "O modelo nunca chama a ferramenta",
+          "A docstring não explica quando ela é útil"
+        ]
+      ],
+      "explicacao": "Quase todo problema de roteamento se resolve com descrições mais específicas: o que a ferramenta faz, quando usar, quando não usar e quais valores aceita."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Se a ferramenta lançar uma exceção, o melhor é derrubar o programa para que o erro não passe despercebido.",
+      "resposta": false,
+      "explicacao": "Falso. O erro deve ser convertido em resultado estruturado e devolvido ao modelo, que explica o problema ao usuário ou corrige o pedido. Registre o erro em log, mas mantenha a esteira funcionando."
+    }
+  ],
+  "rotulo": "Atividade"
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
