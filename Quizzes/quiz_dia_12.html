@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 12 | Function Calling &amp; Ferramentas Nativas</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 12",
+  "titulo": "Function Calling & Ferramentas Nativas",
+  "chave": "quiz_dia_12",
+  "perguntas": [
+    {
+      "tipo": "multipla",
+      "enunciado": "Quando o Gemini decide usar uma ferramenta declarada, o que acontece?",
+      "opcoes": [
+        "Ele executa a função Python diretamente no seu computador",
+        "Ele devolve um `function_call` com o nome e os argumentos, e o seu código executa a função",
+        "Ele acessa a internet para calcular a resposta",
+        "Ele reescreve o código da função"
+      ],
+      "correta": 1,
+      "explicacao": "O modelo só emite a **intenção** estruturada (nome + argumentos). Quem executa é o seu programa, o que permite colocar regras de segurança no meio. Ele não roda código na sua máquina (primeira), não navega por conta própria (terceira) e não altera a função (quarta)."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Uma docstring vaga como \"faz coisas com dados\" prejudica a escolha da ferramenta pelo modelo.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. O SDK monta a declaração da ferramenta a partir do nome, dos type hints e da docstring: é assim que o modelo descobre **quando** usá-la. Docstring é prompt."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Onde você lê as chamadas de função solicitadas pelo modelo em uma resposta?",
+      "opcoes": [
+        "`response.text`",
+        "`response.function_calls`",
+        "`response.tools_used`",
+        "`response.usage_metadata`"
+      ],
+      "correta": 1,
+      "explicacao": "`response.function_calls` lista os `FunctionCall` (com `name` e `args`). `response.text` traz texto, e `usage_metadata` traz a contagem de tokens; `tools_used` não existe."
+    },
+    {
+      "tipo": "completar",
+      "enunciado": "Para devolver o resultado de uma ferramenta ao modelo usamos `types.Part.from_function_______`.",
+      "respostas": [
+        "response"
+      ],
+      "explicacao": "É `Part.from_function_response(name=..., response={...})`, que fecha o ciclo e permite ao modelo redigir a resposta final."
+    },
+    {
+      "tipo": "ordenar",
+      "enunciado": "Coloque em ordem os passos do ciclo de function calling:",
+      "itens": [
+        "Enviar a pergunta junto com as declarações das ferramentas",
+        "O modelo responde com um `function_call`",
+        "O código local executa a função com os argumentos recebidos",
+        "Enviar o resultado ao modelo como `function_response`",
+        "O modelo redige a resposta final em linguagem natural"
+      ],
+      "explicacao": "Pergunta, intenção, execução local, devolução do resultado e resposta final. Se pular a devolução, o modelo nunca fecha o raciocínio."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Por que anexamos `response.candidates[0].content` (o turno do modelo) ao histórico antes de enviar o `function_response`?",
+      "opcoes": [
+        "Para economizar tokens",
+        "Porque o modelo precisa ver a própria chamada de função que originou aquele resultado",
+        "Porque o SDK exige um histórico com no máximo 2 itens",
+        "Para o resultado ser cacheado"
+      ],
+      "correta": 1,
+      "explicacao": "O `function_response` só faz sentido depois de um `function_call` no histórico. Sem ele, a conversa fica inconsistente. Não é economia de tokens (primeira: na verdade aumenta o contexto), não há limite de 2 itens (terceira) e o cache não tem relação (quarta)."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Para perguntas puramente conceituais, como \"o que é um JOIN?\", o comportamento correto do modelo é **não** chamar nenhuma ferramenta.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. O modo padrão (`AUTO`) deixa o modelo decidir. Um bom conjunto de docstrings faz com que ele responda em texto quando nenhuma ferramenta agrega valor."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Uma ferramenta lançou `ZeroDivisionError`. Qual é a melhor prática no despachador?",
+      "opcoes": [
+        "Deixar o programa cair para chamar a atenção",
+        "Ignorar o erro e devolver `None`",
+        "Capturar a exceção e devolver ao modelo um resultado estruturado como `{\"status\": \"falha\", \"error\": \"...\"}`",
+        "Repetir a chamada indefinidamente"
+      ],
+      "correta": 2,
+      "explicacao": "Devolver o erro como observação permite que o modelo explique o problema ao usuário ou corrija os argumentos. Derrubar o programa (primeira) quebra a experiência, `None` (segunda) esconde a causa e repetir sem fim (quarta) gasta cota."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "O que faz `AutomaticFunctionCallingConfig(disable=True)` no `google-genai`?",
+      "opcoes": [
+        "Desliga o modelo",
+        "Impede que o SDK execute as funções sozinho, para você controlar o despacho manualmente",
+        "Proíbe qualquer chamada de função",
+        "Ativa o modo paralelo"
+      ],
+      "correta": 1,
+      "explicacao": "Com `disable=True` o SDK só devolve a intenção e o seu código faz o despacho, o que ajuda a entender e depurar o ciclo. Não desliga o modelo (primeira), não proíbe ferramentas (terceira) e não tem relação com paralelismo (quarta)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual dos parâmetros abaixo é o **mais** seguro de declarar em uma ferramenta para o modelo preencher?",
+      "opcoes": [
+        "`sql_livre: str` que será executado sem validação",
+        "`regiao: str` com docstring listando valores válidos",
+        "`comando_shell: str`",
+        "`caminho_qualquer: str` sem restrições"
+      ],
+      "correta": 1,
+      "explicacao": "Parâmetros simples, descritos e validáveis reduzem risco. Aceitar SQL, shell ou caminhos sem validação (as outras três) transforma o modelo em vetor de ataque. O Dia 18 volta ao tema."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe cada conceito à sua descrição:",
+      "pares": [
+        [
+          "`FunctionDeclaration`",
+          "Descrição da ferramenta enviada ao modelo"
+        ],
+        [
+          "`FunctionCall`",
+          "Pedido do modelo para executar uma função com argumentos"
+        ],
+        [
+          "Dispatcher",
+          "Código seu que mapeia o nome recebido para a função Python real"
+        ],
+        [
+          "`function_response`",
+          "Resultado da execução devolvido ao modelo"
+        ]
+      ],
+      "explicacao": "Declaração informa, chamada solicita, dispatcher executa e resposta devolve o resultado: são as quatro peças do ciclo."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Quando o modelo pede 2 ferramentas independentes no mesmo turno, executá-las em paralelo pode reduzir o tempo total de espera.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. Se as chamadas não dependem uma da outra, rodá-las em threads reduz a latência. Depois, todos os `function_response` devem voltar ao modelo na mesma mensagem."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

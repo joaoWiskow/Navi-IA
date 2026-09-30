@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade — Dia 13 | Loops de Agentes Autônomos (ReAct)</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este atividade precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 13",
+  "titulo": "Loops de Agentes Autônomos (ReAct)",
+  "chave": "atividade_dia_13",
+  "perguntas": [
+    {
+      "tipo": "ordenar",
+      "enunciado": "**Monte o loop.** Coloque as linhas do `rodar_agente` na ordem correta de execução dentro do `while True`.",
+      "itens": [
+        "turno += 1",
+        "if turno > max_iterations: return LIMITE",
+        "response = client.models.generate_content(...)",
+        "if not response.function_calls: return response.text",
+        "resultados = [executar(c) for c in response.function_calls]",
+        "historico.append(respostas_das_ferramentas)"
+      ],
+      "explicacao": "Contar o turno, aplicar o freio, chamar o modelo, encerrar se não há ações, executar as ferramentas e devolver os resultados ao histórico.",
+      "codigo": true
+    },
+    {
+      "tipo": "bug",
+      "enunciado": "Este loop consome toda a cota em alguns casos. **Qual linha está faltando/errada para impedir o loop infinito?**",
+      "codigo": [
+        "turno = 0",
+        "while True:",
+        "    response = client.models.generate_content(...)",
+        "    if not response.function_calls:",
+        "        return response.text",
+        "    executar_e_anexar(response)"
+      ],
+      "bug": [
+        1
+      ],
+      "explicacao": "`while True` sem nenhum contador ou teto: se o modelo nunca parar de pedir ferramentas, o programa também não. O correto é contar os turnos e sair ao passar de `max_iterations`."
+    },
+    {
+      "tipo": "classificar",
+      "enunciado": "**Qual controle resolve?** Classifique cada situação pelo controle mais adequado.",
+      "categorias": [
+        "Teto de iterações",
+        "Detecção de repetição",
+        "Erro instrutivo"
+      ],
+      "itens": [
+        [
+          "O modelo entra em ciclo alternando entre 3 ferramentas por 40 turnos",
+          0
+        ],
+        [
+          "O modelo chama `buscar_registro(\"R-9\")` 3 vezes seguidas",
+          1
+        ],
+        [
+          "A ferramenta recebeu `\"sul\"` mas só aceita `\"Sul\"`",
+          2
+        ],
+        [
+          "Nenhum sinal de parada depois de 5 turnos",
+          0
+        ],
+        [
+          "Chamadas idênticas com argumentos idênticos",
+          1
+        ],
+        [
+          "A mensagem \"Tabela 'cliente' nao existe. Validas: clientes, pedidos\"",
+          2
+        ]
+      ],
+      "explicacao": "O teto é a rede de segurança geral; a repetição cobre a insistência; o erro instrutivo ensina o modelo a se corrigir. Combinados, tornam o agente robusto."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe cada campo da telemetria ao que ele revela:",
+      "pares": [
+        [
+          "Tempo por turno",
+          "Onde a latência se concentra"
+        ],
+        [
+          "Tokens do prompt no turno N",
+          "Crescimento do contexto acumulado"
+        ],
+        [
+          "Número de turnos",
+          "Complexidade real da tarefa"
+        ],
+        [
+          "Ferramentas por turno",
+          "Estratégia escolhida pelo agente"
+        ]
+      ],
+      "explicacao": "Medir é o primeiro passo para otimizar: turnos e ferramentas mostram o raciocínio; tempo e tokens mostram o custo."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Um agente que executou 4 turnos para responder uma pergunta simples pode indicar descrições de ferramentas ruins ou instrução de sistema fraca.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. Muitos turnos para tarefas simples são um sinal para revisar docstrings, instruções e a própria organização das ferramentas."
+    }
+  ],
+  "rotulo": "Atividade"
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 13 | Loops de Agentes Autônomos (ReAct)</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 13",
+  "titulo": "Loops de Agentes Autônomos (ReAct)",
+  "chave": "quiz_dia_13",
+  "perguntas": [
+    {
+      "tipo": "multipla",
+      "enunciado": "O que significa a sigla **ReAct**?",
+      "opcoes": [
+        "Reactive Actions",
+        "Reason + Act (raciocinar e agir de forma intercalada)",
+        "Retrieve and Activate",
+        "Recursive Actor"
+      ],
+      "correta": 1,
+      "explicacao": "ReAct combina passos de **raciocínio** com **ações** (chamadas de ferramentas), alimentando o próximo passo com a observação. As demais siglas não correspondem ao padrão do artigo de Yao et al. (2022)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual é o ciclo básico de um agente ReAct?",
+      "opcoes": [
+        "Pergunta, resposta",
+        "Pensamento, ação, observação, e repetir até responder",
+        "Ação, ação, ação",
+        "Observação, resposta, ação"
+      ],
+      "correta": 1,
+      "explicacao": "O agente raciocina, age (chama uma ferramenta), observa o resultado e repete até ter o suficiente para responder. Uma única pergunta e resposta (primeira) é um chatbot, e as outras ordens não formam um ciclo com realimentação."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Em um loop de agente, quem decide que o trabalho acabou é o modelo: quando ele responde sem nenhum `function_call`.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. Se não há chamadas de função pendentes, o texto é a resposta final. Por isso o loop precisa de um freio externo caso o modelo nunca decida parar."
+    },
+    {
+      "tipo": "completar",
+      "enunciado": "Para evitar loops infinitos, definimos um teto de iterações chamado `max______`.",
+      "respostas": [
+        "iterations",
+        "iteration"
+      ],
+      "explicacao": "É o `max_iterations` (5 nos nossos exemplos): depois dele o loop encerra e avisa o usuário, em vez de gastar cota sem parar."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "O agente chamou `buscar_registro(\"R-999\")` três vezes seguidas e recebeu \"não encontrado\" em todas. Qual proteção é a mais adequada?",
+      "opcoes": [
+        "Aumentar `max_iterations` para 50",
+        "Detectar a chamada repetida (mesmo nome e argumentos) e injetar um aviso para mudar de estratégia ou encerrar",
+        "Remover a ferramenta",
+        "Reiniciar o programa"
+      ],
+      "correta": 1,
+      "explicacao": "A detecção de repetição ataca a causa e ainda dá ao modelo uma chance de se corrigir. Aumentar o teto (primeira) apenas gasta mais cota, remover a ferramenta (terceira) impede casos legítimos e reiniciar (quarta) não resolve o padrão."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Por que os tokens do prompt **crescem** a cada turno de um agente?",
+      "opcoes": [
+        "Porque o modelo fica mais verboso",
+        "Porque o histórico acumulado (chamadas e resultados) é reenviado inteiro a cada chamada ao modelo",
+        "Porque as ferramentas ficam maiores",
+        "Porque o SDK duplica as mensagens"
+      ],
+      "correta": 1,
+      "explicacao": "A API é sem estado: todo o contexto precisa ser reenviado. Agentes longos ficam caros e lentos, e é por isso que medimos a telemetria. Não é verbosidade (primeira), tamanho de ferramenta (terceira) nem duplicação pelo SDK (quarta)."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Frameworks como LangChain ou CrewAI são obrigatórios para construir um agente com loop de ferramentas.",
+      "resposta": false,
+      "explicacao": "Falso. Um agente funcional é um `while` de poucas dezenas de linhas que chama o modelo, executa ferramentas e devolve os resultados. Entender esse laço facilita a depuração, mesmo que você use um framework no futuro."
+    },
+    {
+      "tipo": "ordenar",
+      "enunciado": "Coloque em ordem a sequência de turnos do agente que calcula o total gasto por `maria@empresa.com`:",
+      "itens": [
+        "`buscar_id_usuario` com o e-mail",
+        "`listar_pedidos_usuario` com o ID recebido",
+        "`calcular_total_gasto` com os valores dos pedidos",
+        "Resposta final em texto"
+      ],
+      "explicacao": "Cada ferramenta depende da saída da anterior: por isso o agente precisa de vários turnos e não consegue resolver tudo de uma vez."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual é o papel do gancho `antes_de_executar` que usamos no loop?",
+      "opcoes": [
+        "Formatar a resposta final",
+        "Inspecionar a chamada antes da execução e, se for o caso, bloquear devolvendo um aviso",
+        "Contar tokens",
+        "Traduzir os argumentos"
+      ],
+      "correta": 1,
+      "explicacao": "Ele permite implementar guardas (repetição, limites, segurança) sem alterar o núcleo do loop. Formatar (primeira), contar tokens (terceira, feito por `ao_fim_do_turno`) e traduzir (quarta) são outras responsabilidades."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "O que a telemetria do Bloco 5 mede e por que isso importa?",
+      "opcoes": [
+        "Apenas o tempo total, para exibir ao usuário",
+        "Turnos, tempo por chamada e tokens acumulados, para identificar custos e gargalos",
+        "A temperatura do modelo",
+        "O número de ferramentas instaladas"
+      ],
+      "correta": 1,
+      "explicacao": "Sem medir, não dá para saber onde o agente gasta tempo e dinheiro. Só o tempo total (primeira) esconde os gargalos; temperatura (terceira) e ferramentas instaladas (quarta) não são métricas de execução do loop."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe cada controle à falha que ele previne:",
+      "pares": [
+        [
+          "`max_iterations`",
+          "Loop que nunca termina"
+        ],
+        [
+          "Detecção de chamada repetida",
+          "Agente insistindo na mesma ação inútil"
+        ],
+        [
+          "Erro devolvido como observação",
+          "Crash do programa por exceção na ferramenta"
+        ],
+        [
+          "Telemetria por turno",
+          "Custo e latência invisíveis"
+        ]
+      ],
+      "explicacao": "Cada guarda cobre um modo de falha distinto; em produção, todos convivem."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Quando o modelo pede duas ferramentas independentes no mesmo turno, o loop deve executar as duas e devolver **os dois** resultados antes de chamar o modelo de novo.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. O modelo espera um `function_response` para cada `function_call` do turno; devolver só um deixa o histórico inconsistente."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

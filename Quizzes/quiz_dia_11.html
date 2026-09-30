@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 11 | Structured Outputs, Schemas &amp; Pydantic</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 11",
+  "titulo": "Structured Outputs, Schemas & Pydantic",
+  "chave": "quiz_dia_11",
+  "perguntas": [
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual é o principal ganho de usar **Structured Outputs** em vez de pedir \"responda em JSON\" no prompt?",
+      "opcoes": [
+        "A resposta fica mais criativa e detalhada",
+        "A forma da resposta passa a ser garantida por um contrato, e não apenas pedida por favor",
+        "O modelo deixa de precisar de tokens para responder",
+        "O modelo passa a conhecer os dados privados da empresa"
+      ],
+      "correta": 1,
+      "explicacao": "Com `response_schema`, a geração é restringida ao schema, então a **forma** do JSON é garantida. Não muda criatividade (a primeira opção), não elimina tokens (a terceira: a resposta continua sendo gerada token a token) e não dá acesso a dados privados (a quarta: o modelo só sabe o que está no prompt ou nas ferramentas)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual parâmetro de `GenerateContentConfig` recebe a classe Pydantic com o contrato de saída?",
+      "opcoes": [
+        "`response_schema`",
+        "`output_class`",
+        "`json_mode`",
+        "`system_instruction`"
+      ],
+      "correta": 0,
+      "explicacao": "É o `response_schema`, geralmente acompanhado de `response_mime_type=\"application/json\"`. `output_class` e `json_mode` não existem no SDK `google-genai`, e `system_instruction` serve para orientar o comportamento do modelo, não para definir o formato."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Usar `response_schema` garante que o **valor** extraído está correto (por exemplo, que a idade do texto é mesmo 29).",
+      "resposta": false,
+      "explicacao": "Falso. O schema garante a **forma** (o campo `idade` existe e é um inteiro), mas o modelo ainda pode extrair um valor errado. Por isso combinamos o schema com validadores (`@field_validator`) e testes."
+    },
+    {
+      "tipo": "completar",
+      "enunciado": "Depois da chamada com `response_schema`, o objeto Pydantic já instanciado fica em `response.______`.",
+      "respostas": [
+        "parsed"
+      ],
+      "explicacao": "É `response.parsed`. Já `response.text` traz o JSON como texto, que você teria de converter manualmente com `json.loads`."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Como o modelo consegue respeitar o schema com tanta confiabilidade?",
+      "opcoes": [
+        "Ele foi retreinado a cada requisição com o seu schema",
+        "A geração é restringida (constrained decoding): a cada token só são aceitos os que mantêm o documento válido segundo o schema",
+        "O SDK repete a chamada até acertar o formato",
+        "O Pydantic corrige o texto depois de gerado"
+      ],
+      "correta": 1,
+      "explicacao": "É a decodificação restrita por gramática: tokens que quebrariam o schema simplesmente não são candidatos. Não há retreino (primeira), o SDK não fica repetindo chamadas (terceira) e o Pydantic *valida* o resultado, mas não é ele quem impede tokens inválidos durante a geração (quarta)."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Declarar um campo como `Literal[\"ativo\", \"inativo\", \"pendente\"]` (ou um `Enum`) impede o modelo de devolver o valor \"suspenso\".",
+      "resposta": true,
+      "explicacao": "Verdadeiro. O conjunto de valores vai para o JSON Schema e a geração é restringida a ele. Além disso, o Pydantic recusaria \"suspenso\" na validação."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Para que serve o decorador `@field_validator` do Pydantic v2?",
+      "opcoes": [
+        "Para acelerar a validação em paralelo",
+        "Para transformar o campo em obrigatório",
+        "Para aplicar regras de negócio a um campo, como recusar `registros_afetados` negativo",
+        "Para gerar o JSON Schema automaticamente"
+      ],
+      "correta": 2,
+      "explicacao": "O validador roda depois do tipo ser checado e permite regras próprias (lançar `ValueError` se o número for negativo, por exemplo). Ele não paraleliza nada (primeira), a obrigatoriedade vem da ausência de valor padrão (segunda) e o schema é gerado por `model_json_schema()` (quarta)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual método do Pydantic v2 devolve o JSON Schema de uma classe?",
+      "opcoes": [
+        "`Classe.schema_json_v1()`",
+        "`Classe.model_json_schema()`",
+        "`Classe.to_schema()`",
+        "`Classe.dump_schema()`"
+      ],
+      "correta": 1,
+      "explicacao": "`model_json_schema()` é o método da v2 (o antigo `.schema()` da v1 está obsoleto). Os outros nomes não existem no Pydantic."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Na comparação do benchmark, o que costuma acontecer com a abordagem \"peça JSON no prompt\"?",
+      "opcoes": [
+        "Ela nunca funciona",
+        "Ela funciona sempre, mas é mais lenta",
+        "Em parte das respostas o modelo envolve o JSON em cercas de markdown (```json), quebrando o `json.loads`",
+        "Ela devolve XML em vez de JSON"
+      ],
+      "correta": 2,
+      "explicacao": "O problema é **probabilístico**: na maioria das vezes funciona, mas de vez em quando vem texto extra ou cercas de markdown que explodem o parser. Não é que nunca funcione (primeira) nem que seja mais lenta por natureza (segunda), e o formato pedido continua sendo JSON (quarta)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Um log de erro não informa o horário. Qual instrução é a mais segura para o campo `timestamp` do `RelatorioIncidente`?",
+      "opcoes": [
+        "Não dizer nada e confiar no modelo",
+        "Pedir que use `\"desconhecido\"` quando a informação estiver ausente, em vez de inventar",
+        "Pedir que use a hora atual do servidor",
+        "Deixar o campo sem obrigatoriedade e aceitar qualquer valor"
+      ],
+      "correta": 1,
+      "explicacao": "Dar uma saída explícita evita a alucinação de um horário plausível. Confiar sem instrução (primeira) convida a inventar; usar a hora atual (terceira) grava um dado falso; aceitar qualquer valor (quarta) joga o problema para quem consome os dados."
+    },
+    {
+      "tipo": "completar",
+      "enunciado": "No Pydantic, a função usada para adicionar descrição e restrições (como `ge=0, le=120`) a um campo é `______`.",
+      "respostas": [
+        "Field",
+        "field"
+      ],
+      "explicacao": "É `Field(...)`. A descrição também vai para o JSON Schema e ajuda o modelo a entender o que preencher."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe cada elemento do Pydantic à sua função:",
+      "pares": [
+        [
+          "`BaseModel`",
+          "Classe base que declara o contrato de dados"
+        ],
+        [
+          "`Field(description=...)`",
+          "Documenta e restringe um campo"
+        ],
+        [
+          "`Enum`",
+          "Limita os valores a uma lista fechada"
+        ],
+        [
+          "`ValidationError`",
+          "Exceção lançada quando os dados violam o contrato"
+        ]
+      ],
+      "explicacao": "Cada peça tem um papel: a classe define a forma, `Field` detalha o campo, o `Enum` fecha as opções e `ValidationError` sinaliza a violação (é o que você captura no teste de estresse)."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
