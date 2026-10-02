@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade — Dia 14 | Model Context Protocol: Arquitetura &amp; Stdio</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este atividade precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 14",
+  "titulo": "Model Context Protocol: Arquitetura & Stdio",
+  "chave": "atividade_dia_14",
+  "perguntas": [
+    {
+      "tipo": "sandbox",
+      "enunciado": "**Escreva o handshake.** Monte, na mão, o envelope JSON-RPC de `initialize` que o cliente envia (com `id`, `protocolVersion`, `capabilities` e `clientInfo`).",
+      "validador": "jsonrpc",
+      "esperado": "aceito",
+      "placeholder": "{\n  \"jsonrpc\": \"2.0\",\n  ...\n}",
+      "linhas": 9,
+      "explicacao": "O envelope precisa de `jsonrpc: \"2.0\"`, `id`, `method: \"initialize\"` e `params` com `protocolVersion`, `capabilities` e `clientInfo` (nome e versão). É o que o seu `01_stdio_inspector.py` envia.",
+      "config": {
+        "metodo": "initialize"
+      }
+    },
+    {
+      "tipo": "sandbox",
+      "enunciado": "**Chame uma ferramenta.** Escreva o envelope `tools/call` para a ferramenta `somar` com os argumentos `a` = 2 e `b` = 3.",
+      "validador": "jsonrpc",
+      "esperado": "aceito",
+      "placeholder": "{\"jsonrpc\": \"2.0\", \"id\": 3, ...}",
+      "linhas": 6,
+      "explicacao": "`tools/call` leva `params.name` (a ferramenta) e `params.arguments` (os valores). Os argumentos numéricos precisam ser números JSON, não texto.",
+      "config": {
+        "metodo": "tools/call",
+        "nome": "somar",
+        "args": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    {
+      "tipo": "classificar",
+      "enunciado": "**Tool, Resource ou Prompt?** Classifique cada capacidade de um servidor MCP.",
+      "categorias": [
+        "Tool",
+        "Resource",
+        "Prompt"
+      ],
+      "itens": [
+        [
+          "`somar(a, b)`, que executa um cálculo",
+          0
+        ],
+        [
+          "O arquivo `docs/regras.md` exposto para leitura",
+          1
+        ],
+        [
+          "Um modelo de instrução \"revise este código\"",
+          2
+        ],
+        [
+          "`converter_temperatura(valor, de, para)`",
+          0
+        ],
+        [
+          "O conteúdo de uma tabela de configuração em somente leitura",
+          1
+        ],
+        [
+          "Um template de relatório de incidente reutilizável",
+          2
+        ]
+      ],
+      "explicacao": "Tools **fazem**, Resources **informam** e Prompts **orientam**."
+    },
+    {
+      "tipo": "ordenar",
+      "enunciado": "Reconstrua a conversa de baixo nível: coloque as mensagens na ordem.",
+      "itens": [
+        "cliente -> servidor: `initialize`",
+        "servidor -> cliente: resposta com `serverInfo`",
+        "cliente -> servidor: `notifications/initialized`",
+        "cliente -> servidor: `tools/list`",
+        "servidor -> cliente: lista de ferramentas com `inputSchema`"
+      ],
+      "explicacao": "Apresentação, resposta, confirmação, descoberta e catálogo."
+    },
+    {
+      "tipo": "bug",
+      "enunciado": "O servidor MCP `stdio` trava a conversa no meio do handshake. **Qual linha é a culpada?**",
+      "codigo": [
+        "from mcp.server.fastmcp import FastMCP",
+        "mcp = FastMCP(\"demo\")",
+        "",
+        "@mcp.tool()",
+        "def somar(a: int, b: int) -> int:",
+        "    print(\"somando...\")",
+        "    return a + b",
+        "",
+        "mcp.run(transport=\"stdio\")"
+      ],
+      "bug": [
+        5
+      ],
+      "explicacao": "O `print` escreve no `stdout`, que é o canal do protocolo, e corrompe a mensagem JSON-RPC. A alternativa correta é `print(..., file=sys.stderr)`."
+    }
+  ],
+  "rotulo": "Atividade"
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>

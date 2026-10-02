@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Dia 14 | Model Context Protocol: Arquitetura &amp; Stdio</title>
+<link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+<noscript><p style="max-width:720px;margin:24px auto">Este quiz precisa de JavaScript ativado no navegador.</p></noscript>
+<script>
+const QUIZ = {
+  "dia": "Dia 14",
+  "titulo": "Model Context Protocol: Arquitetura & Stdio",
+  "chave": "quiz_dia_14",
+  "perguntas": [
+    {
+      "tipo": "multipla",
+      "enunciado": "Que problema o **MCP** resolve?",
+      "opcoes": [
+        "Treinar modelos maiores",
+        "A explosão de integrações N×M entre aplicações de IA e fontes de dados/ferramentas, com um protocolo comum",
+        "A tradução automática de código",
+        "O armazenamento de vetores"
+      ],
+      "correta": 1,
+      "explicacao": "Com um padrão aberto, cada aplicação implementa o cliente uma vez e cada fonte implementa o servidor uma vez. Ele não treina modelos (primeira), não traduz código (terceira) e não é um banco vetorial (quarta)."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "No vocabulário do MCP, o que é o **host**?",
+      "opcoes": [
+        "O servidor de ferramentas",
+        "A aplicação de IA que o usuário utiliza e que contém o cliente MCP",
+        "O banco de dados",
+        "O provedor de nuvem"
+      ],
+      "correta": 1,
+      "explicacao": "O host é a aplicação (para nós, o script com o Gemini) que abriga um ou mais clientes MCP. O servidor (primeira) é quem expõe as capacidades; banco e nuvem (terceira e quarta) não são papéis do protocolo."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual formato de mensagem o MCP usa?",
+      "opcoes": [
+        "gRPC binário",
+        "GraphQL",
+        "JSON-RPC 2.0",
+        "SOAP/XML"
+      ],
+      "correta": 2,
+      "explicacao": "Requisições, respostas e notificações seguem JSON-RPC 2.0 (`{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": ...}`). Os demais formatos existem, mas não são o do MCP."
+    },
+    {
+      "tipo": "completar",
+      "enunciado": "No transporte `stdio`, o servidor é iniciado como um processo ______ do cliente.",
+      "respostas": [
+        "filho"
+      ],
+      "explicacao": "O cliente inicia o servidor como processo filho e as mensagens trafegam pela entrada e saída padrão, sem portas de rede."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Em um servidor MCP com transporte `stdio`, é seguro usar `print()` para depurar, pois a saída vai apenas para o terminal.",
+      "resposta": false,
+      "explicacao": "Falso. O `stdout` é o **canal do protocolo**: qualquer `print` corrompe a conversa JSON-RPC. Logs devem ir para `stderr` (`print(..., file=sys.stderr)`)."
+    },
+    {
+      "tipo": "ordenar",
+      "enunciado": "Coloque em ordem o ciclo de vida de uma conexão MCP:",
+      "itens": [
+        "Cliente inicia o servidor como processo filho",
+        "Cliente envia `initialize` e o servidor responde",
+        "Cliente envia a notificação `notifications/initialized`",
+        "Cliente pede `tools/list`",
+        "Cliente executa `tools/call`"
+      ],
+      "explicacao": "Primeiro a apresentação (handshake), depois a confirmação, a descoberta de ferramentas e só então as chamadas."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "A mensagem `notifications/initialized` não tem `id` porque é uma notificação: não espera resposta.",
+      "resposta": true,
+      "explicacao": "Verdadeiro. Em JSON-RPC, requisições têm `id` e recebem resposta; notificações não têm `id` e não são respondidas."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Qual método MCP o cliente usa para descobrir quais ferramentas o servidor oferece?",
+      "opcoes": [
+        "`tools/list`",
+        "`tools/discover`",
+        "`server/capabilities`",
+        "`ping`"
+      ],
+      "correta": 0,
+      "explicacao": "`tools/list` (`session.list_tools()` no SDK). Os demais nomes não correspondem a métodos de descoberta de ferramentas."
+    },
+    {
+      "tipo": "associar",
+      "enunciado": "Associe cada primitivo do MCP ao seu uso:",
+      "pares": [
+        [
+          "Tools",
+          "Ações que o modelo pode pedir (com efeitos)"
+        ],
+        [
+          "Resources",
+          "Dados de leitura que alimentam o contexto"
+        ],
+        [
+          "Prompts",
+          "Modelos de instrução reutilizáveis"
+        ],
+        [
+          "Cliente MCP",
+          "Mantém a conexão com um servidor dentro do host"
+        ]
+      ],
+      "explicacao": "Tools agem, Resources informam, Prompts padronizam instruções e o cliente faz a ponte com o servidor."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Na ponte MCP-Gemini, de onde vêm as declarações de ferramentas entregues ao modelo?",
+      "opcoes": [
+        "De um arquivo JSON escrito à mão",
+        "Do catálogo devolvido por `tools/list` (nome, descrição e `inputSchema`), convertido para `FunctionDeclaration`",
+        "Do Pydantic",
+        "De variáveis de ambiente"
+      ],
+      "correta": 1,
+      "explicacao": "A ponte converte dinamicamente o catálogo do servidor, então adicionar uma ferramenta ao servidor não exige alterar o cliente. Escrever à mão (primeira) perde a vantagem do padrão; Pydantic e variáveis de ambiente (terceira e quarta) não descrevem ferramentas MCP."
+    },
+    {
+      "tipo": "multipla",
+      "enunciado": "Por que o `stdio` é o transporte escolhido para o nosso projeto?",
+      "opcoes": [
+        "É o único suportado",
+        "Não abre portas de rede: a comunicação é local, entre processos, sem exposição pública",
+        "É mais rápido que todos os outros em qualquer cenário",
+        "Dispensa o SDK"
+      ],
+      "correta": 1,
+      "explicacao": "Segurança e simplicidade: sem sockets, sem servidor HTTP para proteger. Não é o único transporte (primeira; há HTTP), não é sempre o mais rápido (terceira) e ainda usamos o SDK (quarta)."
+    },
+    {
+      "tipo": "vf",
+      "enunciado": "Um Resource MCP é o lugar adequado para expor uma operação que apaga registros.",
+      "resposta": false,
+      "explicacao": "Falso. Resources são para **leitura de contexto**. Operações com efeito (apagar, gravar) pertencem a Tools, com validação e controle explícitos."
+    }
+  ]
+};
+</script>
+<script src="quiz.js"></script>
+</body>
+</html>
