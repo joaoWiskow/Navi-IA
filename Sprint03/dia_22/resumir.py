@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from transcrever import transcrever_audio
 
 load_dotenv()
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-3.5-flash-lite"
 
 class ItemAcao(BaseModel):
     descricao: str = Field(description="Acao ou fato importante extraido do audio")

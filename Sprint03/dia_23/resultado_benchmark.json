@@ -1,0 +1,18 @@
+[
+  {
+    "cenario": "alucinacao_parcial",
+    "nota_humana": 0.5,
+    "nota_juiz_ia": 0.5,
+    "delta_discrepancia": 0.0,
+    "alucinacoes": [
+      "e causou prejuizo de 1 milhao de reais."
+    ]
+  },
+  {
+    "cenario": "resposta_perfeita",
+    "nota_humana": 1.0,
+    "nota_juiz_ia": 1.0,
+    "delta_discrepancia": 0.0,
+    "alucinacoes": []
+  }
+]

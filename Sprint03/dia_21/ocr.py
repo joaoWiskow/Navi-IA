@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from visao import carregar_imagem
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-3.5-flash-lite"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 API_KEY = os.environ.get("GEMINI_API_KEY")
